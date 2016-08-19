@@ -1,7 +1,7 @@
 export default function ({ types: t }) {
   return {
     visitor: {
-      ClassDeclaration(path) {
+      ClassDeclaration(path, state) {
         if (!path.node.decorators) {
           return;
         }
@@ -63,19 +63,33 @@ export default function ({ types: t }) {
 
         ctor.params = ctor.params.concat(toParam.map(i => t.identifier(i)));
 
-        const injectExp = t.expressionStatement(t.assignmentExpression(
-          '=',
-          t.memberExpression(
-            t.identifier(path.node.id.name),
-            t.identifier('$inject')),
-          t.arrayExpression(toInject.map(d => t.stringLiteral(d)))
-        ));
+		if(!state.opts.keepClass){
+			const injectExp = t.expressionStatement(t.assignmentExpression(
+			  '=',
+			  t.memberExpression(
+				t.identifier(path.node.id.name),
+				t.identifier('$inject')),
+			  t.arrayExpression(toInject.map(d => t.stringLiteral(d)))
+			));
 
-        if (path.parentPath.type === 'ExportNamedDeclaration') {
-          path.parentPath.insertAfter(injectExp);
-        } else {
-          path.insertAfter(injectExp);
-        }
+			if (path.parentPath.type === 'ExportNamedDeclaration') {
+			  path.parentPath.insertAfter(injectExp);
+			} else {
+			  path.insertAfter(injectExp);
+			}
+		} else {
+			const $statcInject = t.classMethod('get', 
+				t.identifier('$inject'),
+				[], 
+				t.blockStatement([
+            		t.returnStatement(t.arrayExpression(toInject.map(function (d) {
+         				 return t.stringLiteral(d);
+					})))
+			   	]), false, true);
+			path.node.body.body.unshift($statcInject);
+			path.node.decorators = null;
+		}
+
       }
     }
   };
