@@ -16,7 +16,8 @@ Note: this library depends on the [syntax decorators](https://www.npmjs.com/pack
 //don`t transform the syntax that chrome52 native support
 {
   //"presets":[es2015],
-  "plugins": ["transform-es2015-modules-commonjs",  "syntax-decorators", "ng-annotate-2", {keepClass: true}]
+  "plugins": ["transform-es2015-modules-commonjs",  "syntax-decorators", 
+  ["ng-annotate-2", {keepClass: true}]]
 }
 ```
 
